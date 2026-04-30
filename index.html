@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<title>Zenit — Habit OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{
+  --bg:#09090F;--bg1:#0F0F1A;--bg2:#141420;--bg3:#1C1C2E;--bg4:#22223A;
+  --line:rgba(255,255,255,.06);--line2:rgba(255,255,255,.10);
+  --violet:#6C47FF;--violet2:#8B6FFF;--violetDim:rgba(108,71,255,.18);--violetGlow:rgba(108,71,255,.35);
+  --emerald:#00C896;--emeraldDim:rgba(0,200,150,.15);
+  --amber:#FFB340;--amberDim:rgba(255,179,64,.15);
+  --rose:#FF4D6A;--roseDim:rgba(255,77,106,.15);
+  --sky:#38BDF8;--skyDim:rgba(56,189,248,.15);
+  --t1:#F4F4FF;--t2:#8888AA;--t3:#44445A;--t4:#2A2A3C;
+  --mono:'JetBrains Mono',monospace;
+  --r:20px;--rm:14px;--rs:9px;
+  --nav-h:72px;--safe:env(safe-area-inset-bottom,0px);
+}
+body.light{
+  --bg:#F7F7FF;--bg1:#FFFFFF;--bg2:#EFEFFF;--bg3:#E8E8F8;--bg4:#DDDDF0;
+  --line:rgba(108,71,255,.08);--line2:rgba(108,71,255,.14);
+  --t1:#0A0A1A;--t2:#555577;--t3:#9999BB;--t4:#DEDEED;
+  --violetDim:rgba(108,71,255,.10);--violetGlow:rgba(108,71,255,.20);
+  --emeraldDim:rgba(0,200,150,.10);--amberDim:rgba(255,179,64,.10);--roseDim:rgba(255,77,106,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body,#root{height:100%}
+body{font-family:'Bricolage Grotesque',sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;transition:background .4s,color .3s}
+button,input,select,textarea{font-family:inherit;outline:none}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) hue-rotate(220deg)}
+
+/* SHELL */
+.shell{height:100%;display:flex;flex-direction:column;max-width:430px;margin:0 auto;background:var(--bg);overflow:hidden;position:relative}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;padding-bottom:calc(var(--nav-h) + var(--safe) + 20px)}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* FLOATING PILL NAV */
+.nav-float{position:fixed;bottom:calc(14px + var(--safe));left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:402px;background:var(--bg2);border:1px solid var(--line2);border-radius:30px;display:flex;align-items:center;padding:5px;z-index:900;backdrop-filter:blur(28px);box-shadow:0 12px 48px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05)}
+.nb{flex:1;height:50px;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);border:none;background:none}
+.nb svg{width:19px;height:19px;stroke:var(--t3);transition:stroke .22s}
+.nb .nl{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.05em;text-transform:uppercase;transition:color .22s}
+.nb.on{background:var(--violet);box-shadow:0 3px 18px var(--violetGlow)}
+.nb.on svg{stroke:#fff}
+.nb.on .nl{color:rgba(255,255,255,.8)}
+.nb:active{transform:scale(.93)}
+
+/* FAB — single, no duplicates */
+.fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe) + 20px);right:max(16px,calc(50% - 199px));width:50px;height:50px;border-radius:50%;background:var(--violet);border:none;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 28px var(--violetGlow);z-index:400;transition:all .22s cubic-bezier(.4,0,.2,1)}
+.fab:hover{transform:scale(1.08)}
+.fab:active{transform:scale(.92)}
+.fab svg{width:22px;height:22px;stroke:#fff;stroke-width:2.2;stroke-linecap:round}
+
+/* PAGE HEADER */
+.ph{padding:22px 20px 10px;display:flex;justify-content:space-between;align-items:flex-end}
+.ph-title{font-size:27px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.ph-sub{font-size:12px;color:var(--t2);font-weight:500;margin-top:3px}
+.ph-btn{width:38px;height:38px;border-radius:12px;background:var(--bg3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.ph-btn svg{width:17px;height:17px;stroke:var(--t2)}
+.ph-btn:active{transform:scale(.9);background:var(--bg4)}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r)}
+.card-in{background:var(--bg3);border:1px solid var(--line);border-radius:var(--rm)}
+.card-glow{background:linear-gradient(135deg,rgba(108,71,255,.12),rgba(108,71,255,.04));border:1px solid rgba(108,71,255,.2);border-radius:var(--r)}
+
+/* SECTION */
+.sec{padding:0 20px 20px}
+.sec-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-ttl{font-size:11.5px;font-weight:700;color:var(--t2);letter-spacing:.08em;text-transform:uppercase}
+.sec-act{font-size:12px;color:var(--violet2);font-weight:700;cursor:pointer;padding:4px 10px;background:var(--violetDim);border-radius:20px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;font-family:inherit;font-weight:700;transition:all .2s;white-space:nowrap;letter-spacing:.01em}
+.btn:active{transform:scale(.96)}
+.btn-v{background:var(--violet);color:#fff;border-radius:var(--rm);padding:13px 22px;font-size:14px;box-shadow:0 4px 20px var(--violetGlow)}
+.btn-v:hover{background:var(--violet2)}
+.btn-ghost{background:var(--bg3);color:var(--t2);border-radius:var(--rm);padding:12px 18px;font-size:13px;border:1px solid var(--line2)}
+.btn-ghost:hover{background:var(--bg4);color:var(--t1)}
+.btn-danger{background:var(--roseDim);color:var(--rose);border-radius:var(--rm);padding:10px 15px;font-size:13px;border:1px solid rgba(255,77,106,.2)}
+.btn-sm{padding:9px 15px;font-size:12px;border-radius:var(--rs)}
+.btn-xs{padding:7px 12px;font-size:11px;border-radius:8px}
+
+/* INPUTS */
+.inp,.sel,.ta{width:100%;padding:12px 15px;background:var(--bg3);border:1.5px solid var(--line2);border-radius:var(--rm);color:var(--t1);font-family:inherit;font-size:14px;transition:border .2s,box-shadow .2s}
+.inp:focus,.sel:focus,.ta:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violetDim)}
+.inp::placeholder,.ta::placeholder{color:var(--t3)}
+.sel{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2344445A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}
+.ta{resize:vertical;min-height:88px;line-height:1.65}
+.lbl{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:6px;display:block;letter-spacing:.06em;text-transform:uppercase}
+.fg{margin-bottom:15px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+
+/* BOTTOM SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s;padding-bottom:0}
+.sheet{background:var(--bg1);border-radius:26px 26px 0 0;width:100%;max-width:430px;max-height:92vh;overflow-y:auto;animation:sheetUp .28s cubic-bezier(.32,1,.2,1);padding-bottom:calc(24px + var(--safe))}
+.sheet::-webkit-scrollbar{display:none}
+.sh-handle{width:34px;height:4px;border-radius:2px;background:var(--bg4);margin:13px auto 0}
+.sh-title{font-size:19px;font-weight:800;letter-spacing:-.03em;padding:16px 22px 10px}
+.sh-body{padding:0 22px}
+.sh-foot{padding:14px 22px 0;display:flex;gap:10px}
+
+/* TOGGLE */
+.tog{width:44px;height:25px;border-radius:13px;border:none;cursor:pointer;position:relative;background:var(--bg4);transition:background .25s}
+.tog.on{background:var(--violet)}
+.tog-k{position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .25s cubic-bezier(.4,0,.2,1);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog.on .tog-k{transform:translateX(19px)}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.cv{background:var(--violetDim);color:var(--violet2)}
+.ce{background:var(--emeraldDim);color:var(--emerald)}
+.ca{background:var(--amberDim);color:var(--amber)}
+.cr{background:var(--roseDim);color:var(--rose)}
+.cs{background:var(--skyDim);color:var(--sky)}
+.cg{background:rgba(255,255,255,.07);color:var(--t2)}
+
+/* PROGRESS BAR */
+.pbar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.pf{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pf-v{background:linear-gradient(90deg,var(--violet),var(--violet2))}
+.pf-e{background:var(--emerald)}
+.pf-a{background:var(--amber)}
+.pf-r{background:var(--rose)}
+
+/* HABIT CARD */
+.hcard{padding:15px;border-radius:var(--r);border:1px solid var(--line);background:var(--bg2);margin-bottom:9px;transition:all .18s;cursor:pointer;position:relative;overflow:hidden}
+.hcard:active{transform:scale(.99)}
+.hcard-accent{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.hcard-top{display:flex;align-items:center;gap:12px}
+.hcard-ico{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hcard-ico svg{width:19px;height:19px}
+.hcard-body{flex:1;min-width:0}
+.hcard-name{font-size:14.5px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px;transition:opacity .2s}
+.hcard-name.dn{opacity:.32;text-decoration:line-through;text-decoration-color:var(--t3)}
+.hcard-meta{font-size:11px;color:var(--t2)}
+.hcard-right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+.s-tag{font-size:11px;font-weight:700;color:var(--t2);background:var(--bg4);padding:3px 9px;border-radius:20px;font-family:var(--mono)}
+.s-tag.hot{color:var(--amber);background:var(--amberDim)}
+.chk{width:26px;height:26px;border-radius:50%;border:1.8px solid var(--line2);display:flex;align-items:center;justify-content:center;transition:all .22s;cursor:pointer}
+.chk svg{width:12px;height:12px;stroke:transparent;transition:stroke .2s}
+.chk.ck-d{background:var(--emerald);border-color:var(--emerald);box-shadow:0 2px 12px rgba(0,200,150,.4)}
+.chk.ck-d svg{stroke:#fff}
+.chk.ck-s{background:var(--amberDim);border-color:var(--amber)}
+.chk.ck-s svg{stroke:var(--amber)}
+.chk.ck-m{background:var(--roseDim);border-color:var(--rose)}
+.chk.ck-m svg{stroke:var(--rose)}
+
+/* WEEK STRIP */
+.wstrip{padding:0 20px 4px;overflow-x:auto;display:flex;gap:6px;scrollbar-width:none;margin-bottom:14px}
+.wstrip::-webkit-scrollbar{display:none}
+.wday{min-width:44px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0}
+.wday-lbl{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.07em;text-transform:uppercase}
+.wday-pill{width:40px;height:56px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1.5px solid var(--line);background:var(--bg2);transition:all .22s cubic-bezier(.4,0,.2,1)}
+.wday-pill.wt{border-color:var(--line2)}
+.wday-pill.ws{background:var(--violet);border-color:var(--violet);box-shadow:0 4px 18px var(--violetGlow)}
+.wday-num{font-size:15px;font-weight:800;letter-spacing:-.04em;color:var(--t2);line-height:1}
+.wday-pill.wt .wday-num{color:var(--violet)}
+.wday-pill.ws .wday-num{color:#fff}
+.wday-dot{width:5px;height:5px;border-radius:50%;background:transparent;transition:background .2s}
+.wday-pill.we .wday-dot{background:var(--emerald)}
+.wday-pill.wp .wday-dot{background:var(--amber)}
+.wday-pill.ws .wday-dot{background:rgba(255,255,255,.5)}
+
+/* MONTH CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-hd{text-align:center;font-size:9px;font-weight:700;color:var(--t3);padding-bottom:5px;letter-spacing:.06em;text-transform:uppercase}
+.cal-day{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:all .16s;color:var(--t2);border:1.5px solid transparent}
+.cal-day:hover{background:var(--bg3)}
+.cal-today{border-color:var(--violet);color:var(--violet)}
+.cal-sel{background:var(--violet);color:#fff;border-color:var(--violet);box-shadow:0 2px 12px var(--violetGlow)}
+.cal-full{background:var(--emeraldDim);color:var(--emerald);border-color:rgba(0,200,150,.25)}
+.cal-part{background:var(--amberDim);color:var(--amber);border-color:rgba(255,179,64,.2)}
+.cal-miss{background:var(--roseDim);color:var(--rose);border-color:rgba(255,77,106,.15)}
+.cal-other{opacity:.18}
+.cal-sel.cal-full{background:var(--emerald);border-color:var(--emerald)}
+
+/* HEATMAP */
+.hmap-w{overflow-x:auto;padding:0;scrollbar-width:none}
+.hmap-w::-webkit-scrollbar{display:none}
+.hmap{display:flex;gap:3px}
+.hmap-col{display:flex;flex-direction:column;gap:3px}
+.hmc{width:11px;height:11px;border-radius:3px;transition:transform .15s;cursor:pointer}
+.hmc:hover{transform:scale(1.5)}
+.hm0{background:var(--bg4)}.hm1{background:rgba(108,71,255,.25)}.hm2{background:rgba(108,71,255,.5)}.hm3{background:rgba(108,71,255,.75)}.hm4{background:var(--violet)}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 20px}
+.scard{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:17px}
+.sval{font-size:30px;font-weight:800;letter-spacing:-.05em;line-height:1;font-family:var(--mono)}
+.slbl{font-size:10.5px;color:var(--t2);margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+
+/* CIRC PROGRESS */
+.circ{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.circ svg{transform:rotate(-90deg)}
+.circ-in{position:absolute;text-align:center;line-height:1}
+
+/* GREETING BANNER */
+.gbanner{margin:0 20px 20px;border-radius:var(--r);padding:22px;position:relative;overflow:hidden;background:linear-gradient(135deg,#160C38 0%,#0C1630 55%,#0C2A1C 100%);border:1px solid rgba(108,71,255,.25)}
+.gorb{position:absolute;border-radius:50%;filter:blur(45px);pointer-events:none}
+.g-date{font-size:11px;color:rgba(255,255,255,.45);font-weight:700;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase}
+.g-name{font-size:21px;font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:16px}
+.g-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.07);border-radius:12px;overflow:hidden}
+.gst{padding:10px 6px;text-align:center;background:rgba(255,255,255,.04)}
+.gst-v{font-size:17px;font-weight:800;color:#fff;font-family:var(--mono);letter-spacing:-.04em;line-height:1}
+.gst-l{font-size:9px;color:rgba(255,255,255,.45);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+
+/* TRACK CARD */
+.tcard{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:17px;margin-bottom:11px}
+.tcard-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px}
+.tcard-name{font-size:15.5px;font-weight:800;letter-spacing:-.03em;margin-bottom:3px}
+.tcard-meta{font-size:11.5px;color:var(--t2)}
+.tcard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}
+.tstat{background:var(--bg3);border-radius:var(--rs);padding:10px 6px;text-align:center}
+.tstat-v{font-size:16px;font-weight:800;letter-spacing:-.04em;font-family:var(--mono);line-height:1}
+.tstat-l{font-size:9.5px;color:var(--t2);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+
+/* JOURNAL CARD */
+.jcard{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:17px;margin-bottom:9px;cursor:pointer;transition:all .16s;position:relative}
+.jcard:active{transform:scale(.99)}
+.jcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.jcard-title{font-size:14.5px;font-weight:700;letter-spacing:-.02em;flex:1;padding-right:10px;line-height:1.3}
+.jcard-date{font-size:11px;color:var(--t2);font-family:var(--mono);flex-shrink:0}
+.jcard-notes{font-size:13px;color:var(--t2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:9px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;padding:0 20px 15px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tbtn{padding:7px 15px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;border:1.5px solid var(--line2);background:transparent;color:var(--t3);transition:all .18s;letter-spacing:.02em}
+.tbtn.on{background:var(--violet);color:#fff;border-color:var(--violet);box-shadow:0 3px 14px var(--violetGlow)}
+
+/* SEARCH */
+.srch-w{padding:0 20px 14px;position:relative}
+.srch-ico{position:absolute;left:34px;top:50%;transform:translateY(-50%);pointer-events:none}
+.srch-ico svg{width:15px;height:15px;stroke:var(--t3)}
+.srch-inp{width:100%;padding:11px 14px 11px 42px;background:var(--bg2);border:1.5px solid var(--line);border-radius:var(--rm);color:var(--t1);font-family:inherit;font-size:14px;transition:border .2s}
+.srch-inp:focus{border-color:var(--violet);box-shadow:0 0 0 3px var(--violetDim)}
+.srch-inp::placeholder{color:var(--t3)}
+
+/* ICON PICKER */
+.ipick{display:flex;flex-wrap:wrap;gap:7px}
+.ip-item{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid var(--line);background:var(--bg3);transition:all .16s}
+.ip-item svg{width:17px;height:17px;stroke:var(--t2)}
+.ip-on{border-color:var(--violet);background:var(--violetDim)}
+.ip-on svg{stroke:var(--violet2)}
+.cpick{display:flex;gap:7px;flex-wrap:wrap}
+.cpick-d{width:27px;height:27px;border-radius:50%;cursor:pointer;transition:all .16s;border:3px solid transparent}
+.cpick-on{border-color:var(--t1);transform:scale(1.15)}
+
+/* SETTINGS */
+.srow{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--line)}
+.srow:last-child{border:none}
+.srow-l{font-size:14px;font-weight:600}
+.srow-sub{font-size:11.5px;color:var(--t2);margin-top:2px}
+
+/* AUTH */
+.auth-bg{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;position:relative;overflow:hidden}
+.auth-orb1{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(108,71,255,.28),transparent);top:-80px;right:-60px;pointer-events:none}
+.auth-orb2{position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,150,.14),transparent);bottom:-40px;left:-40px;pointer-events:none}
+.auth-card{background:var(--bg2);border:1px solid var(--line2);border-radius:26px;padding:34px 26px;width:100%;max-width:400px;position:relative;z-index:1;box-shadow:0 24px 72px rgba(0,0,0,.5)}
+.auth-wm{font-size:26px;font-weight:800;letter-spacing:-.05em;color:var(--t1);margin-bottom:4px}
+.auth-wm span{color:var(--violet)}
+.auth-tag{font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.55}
+.auth-err{background:var(--roseDim);border:1px solid rgba(255,77,106,.22);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--rose);margin-bottom:14px;font-weight:500}
+.auth-sw{text-align:center;font-size:13px;color:var(--t2);margin-top:16px}
+.auth-sw span{color:var(--violet2);font-weight:700;cursor:pointer}
+.auth-note{margin-top:14px;padding:10px 14px;background:var(--bg3);border-radius:var(--rs);font-size:11.5px;color:var(--t3);text-align:center;line-height:1.55}
+
+/* CONFETTI */
+.cfx{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.cp{position:absolute;animation:cffall linear forwards}
+@keyframes cffall{0%{opacity:1;transform:translateY(-20px) rotate(0deg)}100%{opacity:0;transform:translateY(110vh) rotate(900deg)}}
+
+/* CELEBRATION */
+.celeb-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9990;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(10px);animation:fadeIn .22s}
+.celeb-card{background:var(--bg2);border:1px solid var(--line2);border-radius:26px;padding:34px 26px;text-align:center;width:100%;max-width:340px;animation:popUp .38s cubic-bezier(.175,.885,.32,1.3)}
+@keyframes popUp{0%{transform:scale(.55) translateY(30px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
+.celeb-num{font-size:70px;font-weight:800;letter-spacing:-.07em;font-family:var(--mono);line-height:1;margin-bottom:4px}
+.celeb-unit{font-size:12px;font-weight:700;color:var(--t2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.12em}
+.celeb-msg{font-size:14px;color:var(--t2);line-height:1.65;margin-bottom:22px}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h) + var(--safe) + 20px);left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--line2);border-radius:var(--rm);padding:11px 20px;font-size:13px;font-weight:600;z-index:9980;white-space:nowrap;animation:toastUp .28s cubic-bezier(.4,0,.2,1);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+@keyframes toastUp{from{transform:translateX(-50%) translateY(12px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:44px 20px;color:var(--t3)}
+.empty svg{width:40px;height:40px;stroke:var(--t4);margin-bottom:12px}
+.empty-t{font-size:14px;color:var(--t2);font-weight:600;margin-bottom:4px}
+.empty-s{font-size:12px}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.pg{animation:slideIn .26s cubic-bezier(.4,0,.2,1)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ── DB ─────────────────────────────────── */
+const DB = {
+  get:(k,fb=null)=>{ try{ const v=localStorage.getItem('zn_'+k); return v!=null?JSON.parse(v):fb }catch{ return fb } },
+  set:(k,v)=>{ try{ localStorage.setItem('zn_'+k,JSON.stringify(v)) }catch{} }
+};
+
+/* ── UTILS ──────────────────────────────── */
+const T = ()=>new Date().toISOString().slice(0,10);
+const fmt  = d=>{ try{ return new Date(d+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) }catch{ return d } };
+const fmtL = d=>{ try{ return new Date(d+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) }catch{ return d } };
+const diff  = (a,b)=>Math.round((new Date(b+'T12:00')-new Date(a+'T12:00'))/86400000);
+const shift = (d,n)=>{ const dt=new Date(d+'T12:00'); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10) };
+const gid   = ()=>Math.random().toString(36).slice(2,9)+'_'+Date.now().toString(36);
+const isWE  = d=>{ const w=new Date(d+'T12:00').getDay(); return w===0||w===6 };
+const dow   = d=>new Date(d+'T12:00').getDay();
+const MN    = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DN    = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+const COLS  = ['#6C47FF','#00C896','#FFB340','#FF4D6A','#38BDF8','#A855F7','#F97316','#EC4899'];
+
+/* ── SVG ICONS (pure SVG, no emoji) ─────── */
+const Ico = {
+  home:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  run:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="13" cy="4" r="1"/><path d="M7 21l3-7 3 3 3-8M5 13l2-2 4 2 3-3"/></svg>,
+  book:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
+  brain:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24A2.5 2.5 0 0 1 9.5 2M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.46 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24A2.5 2.5 0 0 0 14.5 2z"/></svg>,
+  pen:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>,
+  settings:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+  gym:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4v16M18 4v16M2 8h4M18 8h4M2 16h4M18 16h4M6 12h12"/></svg>,
+  water:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>,
+  heart:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>,
+  sleep:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
+  walk:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="1.5"/><path d="m9 20 1.5-5 2.5 2 3-7M6 13l2.5-3 4 2 3-4"/></svg>,
+  star:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+  code:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+  target:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  meditate:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="5" r="2"/><path d="M6 20c0-4 2.5-6 6-6s6 2 6 6M3 12c3-2 5-3 9-3s6 1 9 3"/></svg>,
+  check:<svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  plus:<svg viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  trash:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>,
+  edit:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>,
+  skip:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>,
+  x:<svg viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+  cal:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  chart:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
+  search:<svg viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+  prev:<svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>,
+  next:<svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>,
+};
+
+const HICONS = ['run','gym','walk','heart','water','sleep','meditate','brain','book','pen','code','star','target'];
+
+/* ── CONFETTI ────────────────────────────── */
+function Confetti({ level=1 }){
+  const cs=['#6C47FF','#00C896','#FFB340','#FF4D6A','#38BDF8','#A855F7','#fff'];
+  const n=level===1?22:level===2?52:level===3?90:145;
+  const ps=useMemo(()=>Array.from({length:n},(_,i)=>({id:i,c:cs[i%cs.length],l:Math.random()*100,dl:Math.random()*1.8,dr:2.5+Math.random()*2,sz:5+Math.random()*9,rnd:Math.random()>.4})),[]);
+  return <div className="cfx">{ps.map(p=><div key={p.id} className="cp" style={{left:p.l+'%',backgroundColor:p.c,width:p.sz,height:p.sz,borderRadius:p.rnd?'50%':'3px',animationDelay:p.dl+'s',animationDuration:p.dr+'s',top:'-20px'}}/>)}</div>;
+}
+
+/* ── CELEBRATION ─────────────────────────── */
+function Celeb({ streak, onClose }){
+  const cfg=streak>=30?{n:streak,u:'DAY STREAK',m:'Legendary. Real discipline looks exactly like this.',c:'var(--amber)'}
+    :streak>=7?{n:7,u:'DAY STREAK',m:'One full week. Habits are being wired into your brain.',c:'var(--violet2)'}
+    :streak>=3?{n:3,u:'DAY STREAK',m:"Momentum is building. Don't stop now.",c:'var(--emerald)'}
+    :{n:1,u:'DAY DONE',m:'Every streak starts with a single day. This is yours.',c:'var(--sky)'};
+  useEffect(()=>{ const t=setTimeout(onClose,4500); return ()=>clearTimeout(t) },[]);
+  return (
+    <div className="celeb-bg" onClick={onClose}>
+      <div className="celeb-card" style={{borderTop:`3px solid ${cfg.c}`}} onClick={e=>e.stopPropagation()}>
+        <div className="celeb-num" style={{color:cfg.c}}>{cfg.n}</div>
+        <div className="celeb-unit" style={{color:cfg.c}}>{cfg.u}</div>
+        <div className="celeb-msg">{cfg.m}</div>
+        <button className="btn btn-v btn-sm" style={{width:'100%'}} onClick={onClose}>Continue</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── TOAST ───────────────────────────────── */
+function Toast({ msg, onClose }){
+  useEffect(()=>{ const t=setTimeout(onClose,2400); return ()=>clearTimeout(t) },[]);
+  return <div className="toast">{msg}</div>;
+}
+
+/* ── CIRC PROGRESS ───────────────────────── */
+function CircProg({ pct=0, size=72, stroke=5, color='var(--violet)' }){
+  const r=(size-stroke*2)/2, c=2*Math.PI*r, off=c-(Math.min(100,Math.max(0,pct))/100)*c;
+  return (
+    <div className="circ" style={{width:size,height:size}}>
+      <svg width={size} height={size}><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bg4)" strokeWidth={stroke}/>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round" style={{transition:'stroke-dashoffset .7s cubic-bezier(.4,0,.2,1)'}}/>
+      </svg>
+      <div className="circ-in">
+        <div style={{fontSize:size*.19,fontWeight:800,color,fontFamily:'var(--mono)',letterSpacing:'-.05em'}}>{Math.round(pct)}</div>
+        <div style={{fontSize:size*.11,color:'var(--t3)',fontWeight:600}}>%</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── SHEET ───────────────────────────────── */
+function Sheet({ open, onClose, title, children, footer }){
+  if(!open) return null;
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="sheet">
+        <div className="sh-handle"/>
+        <div className="sh-title">{title}</div>
+        <div className="sh-body">{children}</div>
+        {footer&&<div className="sh-foot">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ── TOGGLE ──────────────────────────────── */
+function Tog({ on, set }){
+  return <button className={`tog ${on?'on':''}`} onClick={()=>set(!on)}><div className="tog-k"/></button>;
+}
+
+/* ── FAB ─────────────────────────────────── */
+function FAB({ onClick }){
+  return (
+    <button className="fab" onClick={onClick}>
+      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" stroke="#fff"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  );
+}
+
+/* ── AUTH ────────────────────────────────── */
+function Auth({ onLogin }){
+  const [mode,setMode]=useState('login');
+  const [name,setName]=useState('');
+  const [email,setEmail]=useState('');
+  const [pass,setPass]=useState('');
+  const [err,setErr]=useState('');
+  const [busy,setBusy]=useState(false);
+  const go=()=>{
+    setErr('');
+    if(!email.trim()||!pass.trim()){setErr('Please fill in all fields');return}
+    if(mode==='register'&&!name.trim()){setErr('Please enter your name');return}
+    setBusy(true);
+    setTimeout(()=>{
+      setBusy(false);
+      const users=DB.get('users',[]);
+      if(mode==='login'){
+        const u=users.find(u=>u.email.toLowerCase()===email.toLowerCase().trim()&&u.pass===pass);
+        if(!u){setErr('No account found. Please register first, or check your password.');return}
+        DB.set('sess',u); onLogin(u);
+      } else {
+        if(users.find(u=>u.email.toLowerCase()===email.toLowerCase().trim())){setErr('Email already registered. Please sign in.');return}
+        const u={id:gid(),email:email.trim(),name:name.trim()};
+        DB.set('users',[...users,{...u,pass}]); DB.set('sess',u); onLogin(u);
+      }
+    },350);
+  };
+  return (
+    <div className="auth-bg">
+      <div className="auth-orb1"/><div className="auth-orb2"/>
+      <div className="auth-card">
+        <div className="auth-wm">Zenit<span>.</span></div>
+        <div className="auth-tag">{mode==='login'?'Welcome back. Your streaks are waiting.':'Build systems. Track progress. Become consistent.'}</div>
+        {err&&<div className="auth-err">{err}</div>}
+        {mode==='register'&&<div className="fg"><label className="lbl">Name</label><input className="inp" placeholder="e.g. Sathish" value={name} onChange={e=>setName(e.target.value)}/></div>}
+        <div className="fg"><label className="lbl">Email</label><input className="inp" type="email" placeholder="you@email.com" value={email} onChange={e=>setEmail(e.target.value)}/></div>
+        <div className="fg"><label className="lbl">Password</label><input className="inp" type="password" placeholder="••••••••" value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&go()}/></div>
+        <button className="btn btn-v" style={{width:'100%',padding:'14px',marginTop:4}} onClick={go} disabled={busy}>{busy?'Please wait…':mode==='login'?'Sign In':'Create Account'}</button>
+        <div className="auth-sw">{mode==='login'?'New here? ':'Have an account? '}<span onClick={()=>{setMode(mode==='login'?'register':'login');setErr('')}}>{mode==='login'?'Create account':'Sign in'}</span></div>
+        <div className="auth-note">All data stored locally. No server required.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ── HABITS ──────────────────────────────── */
+function Habits({ uid }){
+  const [habits,setH]=useState(()=>DB.get('h_'+uid,[]));
+  const [logs,setL]=useState(()=>DB.get('hl_'+uid,[]));
+  const [sel,setSel]=useState(T());
+  const [view,setView]=useState('week');
+  const [addOpen,setAdd]=useState(false);
+  const [detail,setDetail]=useState(null);
+  const [celeb,setCeleb]=useState(null);
+  const [toast,setToast]=useState('');
+  const [calM,setCalM]=useState(()=>{ const n=new Date(); return {y:n.getFullYear(),m:n.getMonth()} });
+  const [editH,setEditH]=useState(null);
+  const [form,setForm]=useState({name:'',cat:'Health',icon:'run',color:'#6C47FF',target:'',freq:'daily',skipWE:false,skipD:''});
+
+  const sv=(h,l)=>{ setH(h); setL(l); DB.set('h_'+uid,h); DB.set('hl_'+uid,l) };
+
+  const autoSkip=(h,d)=>{
+    if((h.skipWE||h.freq==='weekdays')&&isWE(d)) return true;
+    if(h.skipD) return h.skipD.split(',').map(s=>s.trim()).includes(d);
+    return false;
+  };
+
+  const calcStreak=(hid,la=logs)=>{
+    const h=habits.find(x=>x.id===hid)||{};
+    let s=0,d=T();
+    for(let i=0;i<730;i++){
+      const l=la.find(l=>l.hid===hid&&l.date===d);
+      if(l?.status==='done'){s++;d=shift(d,-1)}
+      else if(l?.status==='skipped'||autoSkip(h,d)){d=shift(d,-1)}
+      else break;
+    }
+    return s;
+  };
+
+  const calcLongest=(hid)=>{
+    const done=logs.filter(l=>l.hid===hid&&l.status==='done').map(l=>l.date).sort();
+    let max=0,cur=0,prev=null;
+    done.forEach(d=>{ cur=prev&&diff(prev,d)===1?cur+1:1; if(cur>max)max=cur; prev=d });
+    return max;
+  };
+
+  const getLog=(hid,d=sel)=>logs.find(l=>l.hid===hid&&l.date===d);
+
+  const mark=(hid,status)=>{
+    const ex=logs.find(l=>l.hid===hid&&l.date===sel);
+    let nl;
+    if(ex){ if(ex.status===status) nl=logs.filter(l=>!(l.hid===hid&&l.date===sel)); else nl=logs.map(l=>l.hid===hid&&l.date===sel?{...l,status}:l); }
+    else nl=[...logs,{id:gid(),hid,date:sel,status}];
+    sv(habits,nl);
+    if(status==='done'){
+      const s=calcStreak(hid,nl);
+      if([1,3,7].includes(s)||s>=30) setCeleb(s);
+      else setToast('Logged');
+    } else if(status==='skipped') setToast('Skipped — streak intact');
+    else setToast('Marked as missed');
+  };
+
+  const openAdd=(h=null)=>{
+    setEditH(h);
+    setForm(h?{name:h.name,cat:h.cat,icon:h.icon,color:h.color,target:h.target||'',freq:h.freq,skipWE:!!h.skipWE,skipD:h.skipD||''}:{name:'',cat:'Health',icon:'run',color:'#6C47FF',target:'',freq:'daily',skipWE:false,skipD:''});
+    setAdd(true);
+  };
+
+  const saveHabit=()=>{
+    if(!form.name.trim()) return;
+    const h={id:editH?.id||gid(),name:form.name.trim(),cat:form.cat,icon:form.icon,color:form.color,target:form.target,freq:form.freq,skipWE:form.skipWE,skipD:form.skipD,created:editH?.created||T()};
+    sv(editH?habits.map(x=>x.id===h.id?h:x):[...habits,h],logs);
+    setAdd(false); setEditH(null); setToast(editH?'Updated':'Habit added');
+  };
+
+  const delHabit=id=>{ sv(habits.filter(h=>h.id!==id),logs.filter(l=>l.hid!==id)); setDetail(null) };
+
+  // 14-day window centred on today
+  const weekDays=useMemo(()=>Array.from({length:14},(_,i)=>shift(T(),i-7)),[]);
+
+  // Month calendar cells
+  const mDays=useMemo(()=>{
+    const {y,m}=calM, first=new Date(y,m,1).getDay(), last=new Date(y,m+1,0).getDate();
+    const days=[];
+    for(let i=0;i<first;i++) days.push({date:shift(`${y}-${String(m+1).padStart(2,'0')}-01`,-first+i),other:true});
+    for(let i=1;i<=last;i++) days.push({date:`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`,other:false});
+    while(days.length<42) days.push({date:shift(days[days.length-1].date,1),other:true});
+    return days;
+  },[calM]);
+
+  // Heatmap
+  const hmData=useMemo(()=>{
+    const y=new Date().getFullYear(), start=`${y}-01-01`;
+    return Array.from({length:365},(_,i)=>{
+      const d=shift(start,i);
+      const done=logs.filter(l=>l.date===d&&l.status==='done').length;
+      const p=habits.length?done/habits.length:0;
+      return {date:d,heat:p===0?0:p<.25?1:p<.5?2:p<.75?3:4,done};
+    });
+  },[logs,habits]);
+  const hmWks=[]; for(let i=0;i<hmData.length;i+=7) hmWks.push(hmData.slice(i,i+7));
+
+  const todayDone=logs.filter(l=>l.date===sel&&l.status==='done').length;
+  const todayPct=habits.length?Math.round(todayDone/habits.length*100):0;
+  const CATS=['Health','Fitness','Learning','Mindfulness','Productivity','Personal'];
+  const VCOLS=['var(--violet2)','var(--emerald)','var(--amber)','var(--rose)','var(--sky)'];
+
+  return (
+    <div className="pg">
+      {celeb!==null&&<><Confetti level={celeb>=30?4:celeb>=7?3:celeb>=3?2:1}/><Celeb streak={celeb} onClose={()=>setCeleb(null)}/></>}
+      {toast&&<Toast msg={toast} onClose={()=>setToast('')}/>}
+
+      <div className="ph">
+        <div>
+          <div className="ph-title">Habits</div>
+          <div className="ph-sub">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+        </div>
+        <button className="ph-btn" onClick={()=>setView(v=>v==='week'?'month':v==='month'?'year':'week')} title="Switch view">
+          {Ico.cal}
+        </button>
+      </div>
+
+      {/* Progress summary */}
+      <div style={{padding:'2px 20px 14px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',marginBottom:7}}>
+          <span style={{fontSize:11.5,color:'var(--t2)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>{sel===T()?'Today':'Selected'}</span>
+          <span style={{fontSize:12,fontWeight:700,fontFamily:'var(--mono)',color:'var(--violet2)'}}>{todayDone}/{habits.length}</span>
+        </div>
+        <div className="pbar" style={{height:5}}><div className="pf pf-v" style={{width:todayPct+'%'}}/></div>
+      </div>
+
+      {/* WEEK STRIP */}
+      {view==='week'&&(
+        <div className="wstrip">
+          {weekDays.map(d=>{
+            const isSel=d===sel, isT=d===T();
+            const done=logs.filter(l=>l.date===d&&l.status==='done').length;
+            const allD=done>=habits.length&&habits.length>0, part=done>0&&!allD;
+            return (
+              <div key={d} className="wday" onClick={()=>setSel(d)}>
+                <div className="wday-lbl">{DN[dow(d)]}</div>
+                <div className={`wday-pill ${isT&&!isSel?'wt':''} ${isSel?'ws':''} ${!isSel&&allD?'we':''} ${!isSel&&part?'wp':''}`}>
+                  <div className="wday-num">{parseInt(d.slice(8))}</div>
+                  <div className="wday-dot"/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* MONTH VIEW */}
+      {view==='month'&&(
+        <div className="sec">
+          <div className="sec-hd">
+            <div style={{display:'flex',gap:8,alignItems:'center'}}>
+              <button className="ph-btn" style={{width:32,height:32,borderRadius:10}} onClick={()=>setCalM(p=>{const d=new Date(p.y,p.m-1,1);return{y:d.getFullYear(),m:d.getMonth()}})}>{Ico.prev}</button>
+              <span style={{fontSize:14,fontWeight:800,letterSpacing:'-.02em'}}>{MN[calM.m]} {calM.y}</span>
+              <button className="ph-btn" style={{width:32,height:32,borderRadius:10}} onClick={()=>setCalM(p=>{const d=new Date(p.y,p.m+1,1);return{y:d.getFullYear(),m:d.getMonth()}})}>{Ico.next}</button>
+            </div>
+            <div style={{display:'flex',gap:8,fontSize:10.5,color:'var(--t2)'}}>
+              <span style={{color:'var(--emerald)'}}>● Full</span>
+              <span style={{color:'var(--amber)'}}>● Part</span>
+              <span style={{color:'var(--rose)'}}>● Miss</span>
+            </div>
+          </div>
+          <div className="cal-grid">
+            {DN.map(d=><div key={d} className="cal-hd">{d[0]}</div>)}
+            {mDays.map(({date,other},i)=>{
+              const done=habits.filter(h=>getLog(h.id,date)?.status==='done').length;
+              const miss=habits.filter(h=>getLog(h.id,date)?.status==='missed').length;
+              const allD=done>=habits.length&&habits.length>0, part=done>0&&!allD;
+              const isSel=date===sel, isT=date===T();
+              const cls=['cal-day',other?'cal-other':'',isT&&!isSel?'cal-today':'',isSel?'cal-sel':'',!isSel&&allD?'cal-full':'',!isSel&&part?'cal-part':'',!isSel&&miss>0&&done===0?'cal-miss':''].filter(Boolean).join(' ');
+              return <div key={i} className={cls} onClick={()=>setSel(date)}>{parseInt(date.slice(8))}</div>;
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* YEAR HEATMAP */}
+      {view==='year'&&(
+        <div className="sec">
+          <div className="sec-hd"><span className="sec-ttl">{new Date().getFullYear()} Consistency</span></div>
+          <div className="hmap-w">
+            <div className="hmap">
+              {hmWks.map((col,wi)=>(
+                <div key={wi} className="hmap-col">
+                  {col.map((day,di)=><div key={di} className={`hmc hm${day.heat}`} title={`${day.date}: ${day.done}/${habits.length}`} onClick={()=>setSel(day.date)}/>)}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{display:'flex',gap:5,alignItems:'center',marginTop:10}}>
+            <span style={{fontSize:10,color:'var(--t3)'}}>Less</span>
+            {[0,1,2,3,4].map(h=><div key={h} className={`hmc hm${h}`}/>)}
+            <span style={{fontSize:10,color:'var(--t3)'}}>More</span>
+          </div>
+        </div>
+      )}
+
+      {/* Habits list */}
+      <div className="sec" style={{paddingBottom:8}}>
+        <div className="sec-hd">
+          <span className="sec-ttl">{habits.length} Habits</span>
+          <span style={{fontSize:12,color:'var(--t2)',fontFamily:'var(--mono)'}}>{fmt(sel)}</span>
+        </div>
+        {!habits.length&&<div className="empty"><div>{Ico.target}</div><div className="empty-t">No habits yet</div><div className="empty-s">Tap + to create your first</div></div>}
+        {habits.map((h,hi)=>{
+          const log=getLog(h.id), as=autoSkip(h,sel), s=calcStreak(h.id);
+          const st=log?.status||(as?'skipped':null);
+          const pct=Math.min(100,Math.round(s/30*100));
+          return (
+            <div key={h.id} className="hcard" onClick={()=>setDetail(h)}>
+              {st==='done'&&<div className="hcard-accent" style={{background:h.color}}/>}
+              <div className="hcard-top">
+                <div className="hcard-ico" style={{background:h.color+'1A'}}>
+                  <span style={{color:h.color}}>{Ico[h.icon]||Ico.target}</span>
+                </div>
+                <div className="hcard-body">
+                  <div className={`hcard-name ${st==='done'?'dn':''}`}>{h.name}</div>
+                  <div className="hcard-meta">{h.cat}{h.target&&` · ${h.target}`}{as&&!log&&<span style={{color:'var(--amber)',marginLeft:5}}>· Auto-skip</span>}</div>
+                </div>
+                <div className="hcard-right" onClick={e=>e.stopPropagation()}>
+                  <div className={`s-tag ${s>=3?'hot':''}`}>{s}d</div>
+                  <div className={`chk ${st==='done'?'ck-d':st==='skipped'?'ck-s':st==='missed'?'ck-m':''}`} onClick={()=>mark(h.id,'done')}>
+                    {Ico.check}
+                  </div>
+                </div>
+              </div>
+              <div className="pbar" style={{marginTop:10}}>
+                <div className="pf" style={{width:pct+'%',background:h.color}}/>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Single FAB */}
+      <FAB onClick={()=>openAdd()}/>
+
+      {/* Detail sheet */}
+      <Sheet open={!!detail} onClose={()=>setDetail(null)} title={detail?.name||''}>
+        {detail&&(()=>{
+          const h=detail, s=calcStreak(h.id), lo=calcLongest(h.id), done=logs.filter(l=>l.hid===h.id&&l.status==='done').length;
+          const log=getLog(h.id), st=log?.status;
+          return (
+            <>
+              <div style={{display:'flex',gap:14,alignItems:'center',marginBottom:20,paddingBottom:16,borderBottom:'1px solid var(--line)'}}>
+                <div style={{width:54,height:54,borderRadius:17,background:h.color+'1A',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <span style={{color:h.color,width:24,height:24}}>{Ico[h.icon]||Ico.target}</span>
+                </div>
+                <div><div style={{fontSize:12,color:'var(--t2)',marginBottom:2}}>{h.cat}{h.freq==='weekdays'?' · Weekdays':h.skipWE?' · Skip weekends':''}</div>
+                  {h.target&&<div style={{fontSize:13,color:'var(--t1)',fontWeight:600}}>Target: {h.target}</div>}
+                </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:9,marginBottom:20}}>
+                {[[s,'Current','var(--amber)'],[lo,'Best','var(--violet2)'],[done,'Total','var(--emerald)']].map(([v,l,c])=>(
+                  <div key={l} className="card-in" style={{padding:'13px 8px',textAlign:'center'}}>
+                    <div style={{fontSize:22,fontWeight:800,color:c,fontFamily:'var(--mono)',letterSpacing:'-.05em'}}>{v}</div>
+                    <div style={{fontSize:9.5,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:700,marginTop:3}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginBottom:8,fontSize:11,color:'var(--t2)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>Mark for {fmt(sel)}</div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:20}}>
+                {[['done',Ico.check,'Done','var(--emerald)'],['skipped',Ico.skip,'Skip','var(--amber)'],['missed',Ico.x,'Miss','var(--rose)']].map(([s2,ico,l,c])=>(
+                  <button key={s2} className="btn" style={{background:st===s2?c+'22':'var(--bg3)',color:st===s2?c:'var(--t2)',border:`1.5px solid ${st===s2?c:'var(--line2)'}`,borderRadius:'var(--rm)',padding:'12px 6px',flexDirection:'column',gap:5,fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.04em'}}
+                    onClick={()=>mark(h.id,s2)}>
+                    <span style={{width:17,height:17,display:'flex'}}>{ico}</span>{l}
+                  </button>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <button className="btn btn-ghost btn-sm" style={{flex:1}} onClick={()=>{setDetail(null);openAdd(h)}}><span style={{width:13,height:13,display:'flex'}}>{Ico.edit}</span>Edit</button>
+                <button className="btn btn-danger btn-sm" style={{flex:1}} onClick={()=>delHabit(h.id)}><span style={{width:13,height:13,display:'flex'}}>{Ico.trash}</span>Delete</button>
+              </div>
+            </>
+          );
+        })()}
+      </Sheet>
+
+      {/* Add/Edit sheet */}
+      <Sheet open={addOpen} onClose={()=>{setAdd(false);setEditH(null)}} title={editH?'Edit Habit':'New Habit'}
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>{setAdd(false);setEditH(null)}}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={saveHabit}>{editH?'Save':'Add Habit'}</button></>}>
+        <div className="fg"><label className="lbl">Name *</label><input className="inp" placeholder="e.g. Morning Run, Read 20 pages" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+        <div className="r2">
+          <div className="fg"><label className="lbl">Category</label>
+            <select className="sel" value={form.cat} onChange={e=>setForm({...form,cat:e.target.value})}>{CATS.map(c=><option key={c}>{c}</option>)}</select>
+          </div>
+          <div className="fg"><label className="lbl">Frequency</label>
+            <select className="sel" value={form.freq} onChange={e=>setForm({...form,freq:e.target.value})}>
+              <option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="custom">Custom</option>
+            </select>
+          </div>
+        </div>
+        <div className="fg"><label className="lbl">Icon</label>
+          <div className="ipick">{HICONS.map(ic=><div key={ic} className={`ip-item ${form.icon===ic?'ip-on':''}`} onClick={()=>setForm({...form,icon:ic})}><span style={{width:17,height:17}}>{Ico[ic]}</span></div>)}</div>
+        </div>
+        <div className="fg"><label className="lbl">Color</label>
+          <div className="cpick">{COLS.map(c=><div key={c} className={`cpick-d ${form.color===c?'cpick-on':''}`} style={{background:c}} onClick={()=>setForm({...form,color:c})}/>)}</div>
+        </div>
+        <div className="fg"><label className="lbl">Target (optional)</label><input className="inp" placeholder="e.g. 8 hours, 10 pages" value={form.target} onChange={e=>setForm({...form,target:e.target.value})}/></div>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'13px 0',borderTop:'1px solid var(--line)'}}>
+          <div><div style={{fontSize:14,fontWeight:600}}>Skip weekends</div><div style={{fontSize:11.5,color:'var(--t2)',marginTop:2}}>Auto-skip — streak stays intact</div></div>
+          <Tog on={form.skipWE} set={v=>setForm({...form,skipWE:v})}/>
+        </div>
+        <div className="fg" style={{marginTop:13}}><label className="lbl">Custom skip dates</label><input className="inp" placeholder="2025-12-25, 2026-01-01" value={form.skipD} onChange={e=>setForm({...form,skipD:e.target.value})}/></div>
+      </Sheet>
+    </div>
+  );
+}
+
+/* ── SKILLS ──────────────────────────────── */
+function Skills({ uid }){
+  const [skills,setS]=useState(()=>DB.get('s_'+uid,[]));
+  const [slogs,setSL]=useState(()=>DB.get('sl_'+uid,[]));
+  const [addOpen,setAdd]=useState(false);
+  const [logT,setLogT]=useState(null);
+  const [effort,setEff]=useState('');
+  const [note,setNote]=useState('');
+  const [toast,setToast]=useState('');
+  const [form,setForm]=useState({name:'',start:T(),end:'',goal:'',unit:'hours',color:'#6C47FF'});
+  const sv=(s,l)=>{ setS(s); setSL(l); DB.set('s_'+uid,s); DB.set('sl_'+uid,l) };
+
+  const addSkill=()=>{
+    if(!form.name.trim()||!form.end) return;
+    sv([...skills,{id:gid(),...form,created:T()}],slogs);
+    setForm({name:'',start:T(),end:'',goal:'',unit:'hours',color:'#6C47FF'}); setAdd(false); setToast('Skill added');
+  };
+
+  const logE=()=>{
+    if(!effort||!logT) return;
+    const ex=slogs.find(l=>l.sid===logT.id&&l.date===T());
+    const nl=ex?slogs.map(l=>l.sid===logT.id&&l.date===T()?{...l,effort:Number(effort),note}:l):[...slogs,{id:gid(),sid:logT.id,date:T(),effort:Number(effort),note}];
+    sv(skills,nl); setEff(''); setNote(''); setLogT(null); setToast('Effort logged');
+  };
+
+  const stats=(sk)=>{
+    const sl=slogs.filter(l=>l.sid===sk.id);
+    const tot=sl.reduce((s,l)=>s+l.effort,0);
+    const td=Math.max(1,diff(sk.start,sk.end)), el=Math.max(0,diff(sk.start,T())), dl=Math.max(0,diff(T(),sk.end));
+    const tPct=Math.min(100,Math.round(el/td*100));
+    const dg=Number(sk.goal)||0, exp=el*dg, totalGoal=td*dg;
+    const ePct=totalGoal?Math.min(100,Math.round(tot/totalGoal*100)):0;
+    const status=!dg?'on-track':tot>=exp*.9?'on-track':tot<exp*.6?'behind':'ahead';
+    const needed=dl&&dg?Math.max(0,(totalGoal-tot)/dl).toFixed(1):0;
+    return {tot,dl,tPct,ePct,status,needed,days:sl.length,td,todayLog:sl.find(l=>l.date===T())};
+  };
+
+  return (
+    <div className="pg">
+      {toast&&<Toast msg={toast} onClose={()=>setToast('')}/>}
+      <div className="ph"><div><div className="ph-title">Skills</div><div className="ph-sub">Learning progress tracker</div></div></div>
+      <div className="sec">
+        {!skills.length&&<div className="empty"><div>{Ico.brain}</div><div className="empty-t">No skills tracked</div><div className="empty-s">Add a skill to monitor your growth</div></div>}
+        {skills.map((sk,i)=>{
+          const s=stats(sk), c=sk.color||COLS[i%COLS.length];
+          return (
+            <div key={sk.id} className="tcard">
+              <div className="tcard-hd">
+                <div><div className="tcard-name">{sk.name}</div><div className="tcard-meta">{fmt(sk.start)} → {fmt(sk.end)}{sk.goal&&` · ${sk.goal} ${sk.unit}/day`}</div></div>
+                <span className={`chip ${s.status==='on-track'?'ce':s.status==='behind'?'cr':'cs'}`}>{s.status==='on-track'?'On Track':s.status==='behind'?'Behind':'Ahead'}</span>
+              </div>
+              <div style={{marginBottom:11}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><span style={{fontSize:10,color:'var(--t2)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>Timeline</span><span style={{fontSize:11,fontWeight:700,fontFamily:'var(--mono)',color:c}}>{s.tPct}%</span></div>
+                <div className="pbar" style={{height:5}}><div className="pf" style={{width:s.tPct+'%',background:c}}/></div>
+              </div>
+              {sk.goal&&<div style={{marginBottom:13}}>
+                <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><span style={{fontSize:10,color:'var(--t2)',fontWeight:700,textTransform:'uppercase',letterSpacing:'.06em'}}>Effort ({sk.unit})</span><span style={{fontSize:11,fontWeight:700,fontFamily:'var(--mono)',color:'var(--amber)'}}>{s.tot} / {Number(sk.goal)*s.td}</span></div>
+                <div className="pbar" style={{height:5}}><div className="pf pf-a" style={{width:s.ePct+'%'}}/></div>
+              </div>}
+              <div className="tcard-stats">
+                {[[s.days,'Logged',c],[s.dl,'Days Left','var(--amber)'],[s.needed||'✓','Needed/d',s.needed>0?'var(--rose)':'var(--emerald)']].map(([v,l,col])=>(
+                  <div key={l} className="tstat"><div className="tstat-v" style={{color:col}}>{v}</div><div className="tstat-l">{l}</div></div>
+                ))}
+              </div>
+              {s.todayLog&&<div style={{fontSize:12,color:'var(--emerald)',marginBottom:11,fontWeight:600}}>Today: {s.todayLog.effort} {sk.unit}</div>}
+              <div style={{display:'flex',gap:8}}>
+                <button className="btn btn-v btn-sm" style={{flex:1}} onClick={()=>setLogT(sk)}>Log Today</button>
+                <button className="btn btn-danger btn-xs" onClick={()=>sv(skills.filter(x=>x.id!==sk.id),slogs.filter(l=>l.sid!==sk.id))}><span style={{width:13,height:13,display:'flex'}}>{Ico.trash}</span></button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <FAB onClick={()=>setAdd(true)}/>
+      <Sheet open={addOpen} onClose={()=>setAdd(false)} title="New Skill"
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>setAdd(false)}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={addSkill}>Add Skill</button></>}>
+        <div className="fg"><label className="lbl">Skill Name *</label><input className="inp" placeholder="React, SAP, Communication…" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></div>
+        <div className="r2">
+          <div className="fg"><label className="lbl">Start</label><input type="date" className="inp" value={form.start} onChange={e=>setForm({...form,start:e.target.value})}/></div>
+          <div className="fg"><label className="lbl">Target *</label><input type="date" className="inp" value={form.end} onChange={e=>setForm({...form,end:e.target.value})}/></div>
+        </div>
+        <div className="r2">
+          <div className="fg"><label className="lbl">Daily Goal</label><input type="number" className="inp" placeholder="2" value={form.goal} onChange={e=>setForm({...form,goal:e.target.value})}/></div>
+          <div className="fg"><label className="lbl">Unit</label>
+            <select className="sel" value={form.unit} onChange={e=>setForm({...form,unit:e.target.value})}>{['hours','minutes','sessions','modules','exercises','chapters'].map(u=><option key={u}>{u}</option>)}</select>
+          </div>
+        </div>
+        <div className="fg"><label className="lbl">Color</label><div className="cpick">{COLS.map(c=><div key={c} className={`cpick-d ${form.color===c?'cpick-on':''}`} style={{background:c}} onClick={()=>setForm({...form,color:c})}/>)}</div></div>
+      </Sheet>
+      <Sheet open={!!logT} onClose={()=>setLogT(null)} title={'Log: '+(logT?.name||'')}
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>setLogT(null)}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={logE}>Log Effort</button></>}>
+        <div className="fg"><label className="lbl">Effort ({logT?.unit}) {logT?.goal&&`— Goal: ${logT.goal}`}</label><input className="inp" type="number" placeholder="e.g. 2" value={effort} onChange={e=>setEff(e.target.value)}/></div>
+        <div className="fg"><label className="lbl">Notes (optional)</label><textarea className="ta" placeholder="What did you work on?" value={note} onChange={e=>setNote(e.target.value)}/></div>
+      </Sheet>
+    </div>
+  );
+}
+
+/* ── BOOKS ───────────────────────────────── */
+function Books({ uid }){
+  const [books,setB]=useState(()=>DB.get('b_'+uid,[]));
+  const [rlogs,setRL]=useState(()=>DB.get('rl_'+uid,[]));
+  const [addOpen,setAdd]=useState(false);
+  const [logT,setLogT]=useState(null);
+  const [pages,setPg]=useState('');
+  const [note,setNote]=useState('');
+  const [toast,setToast]=useState('');
+  const [filter,setFilter]=useState('all');
+  const [form,setForm]=useState({title:'',author:'',genre:'',total:'',start:T(),end:''});
+  const sv=(b,l)=>{ setB(b); setRL(l); DB.set('b_'+uid,b); DB.set('rl_'+uid,l) };
+
+  const addBook=()=>{
+    if(!form.title.trim()||!form.total) return;
+    sv([...books,{id:gid(),...form}],rlogs);
+    setForm({title:'',author:'',genre:'',total:'',start:T(),end:''}); setAdd(false); setToast('Book added');
+  };
+
+  const logPages=()=>{
+    if(!pages||!logT) return;
+    const ex=rlogs.find(l=>l.bid===logT.id&&l.date===T());
+    const nl=ex?rlogs.map(l=>l.bid===logT.id&&l.date===T()?{...l,pages:Number(pages),note}:l):[...rlogs,{id:gid(),bid:logT.id,date:T(),pages:Number(pages),note}];
+    sv(books,nl); setPg(''); setNote(''); setLogT(null); setToast('Pages logged');
+  };
+
+  const bStats=(book)=>{
+    const bl=rlogs.filter(l=>l.bid===book.id);
+    const read=bl.reduce((s,l)=>s+l.pages,0);
+    const total=Number(book.total), pct=Math.min(100,Math.round(read/total*100));
+    const rem=Math.max(0,total-read);
+    const dl=book.end?Math.max(0,diff(T(),book.end)):null;
+    const needed=dl&&rem?Math.ceil(rem/dl):null;
+    const el=Math.max(1,diff(book.start,T()));
+    const avg=Math.round(read/el)||0;
+    const estDate=avg&&rem?fmtL(shift(T(),Math.ceil(rem/avg))):null;
+    let rs=0; for(let i=0;i<365;i++){ if(bl.find(l=>l.date===shift(T(),-i))) rs++; else break; }
+    return {read,total,pct,rem,dl,needed,avg,estDate,rs,todayLog:bl.find(l=>l.date===T())};
+  };
+
+  const shown=filter==='all'?books:filter==='done'?books.filter(b=>bStats(b).pct>=100):books.filter(b=>bStats(b).pct<100);
+  const GRD=['linear-gradient(135deg,#160C38,#2A1060)','linear-gradient(135deg,#0C2A1A,#0C3A2A)','linear-gradient(135deg,#2A1A0C,#3A2A0C)','linear-gradient(135deg,#2A0C1A,#3A0C2A)','linear-gradient(135deg,#0C1A2A,#0C2A3A)','linear-gradient(135deg,#1A1A0C,#2A2A0C)'];
+
+  return (
+    <div className="pg">
+      {toast&&<Toast msg={toast} onClose={()=>setToast('')}/>}
+      <div className="ph"><div><div className="ph-title">Books</div><div className="ph-sub">Reading tracker</div></div></div>
+      <div className="stat-grid">
+        <div className="scard"><div className="sval" style={{color:'var(--violet2)'}}>{rlogs.reduce((s,l)=>s+l.pages,0)}</div><div className="slbl">Pages Read</div></div>
+        <div className="scard"><div className="sval" style={{color:'var(--emerald)'}}>{books.filter(b=>bStats(b).pct>=100).length}</div><div className="slbl">Completed</div></div>
+      </div>
+      <div className="tabs">
+        {[['all','All'],['reading','Reading'],['done','Finished']].map(([v,l])=>(
+          <button key={v} className={`tbtn ${filter===v?'on':''}`} onClick={()=>setFilter(v)}>{l}</button>
+        ))}
+      </div>
+      <div className="sec">
+        {!shown.length&&<div className="empty"><div>{Ico.book}</div><div className="empty-t">No books here</div><div className="empty-s">Tap + to add a book</div></div>}
+        {shown.map((book,bi)=>{
+          const s=bStats(book);
+          return (
+            <div key={book.id} className="tcard">
+              <div style={{display:'flex',gap:13,marginBottom:13,alignItems:'flex-start'}}>
+                <div style={{width:46,height:62,borderRadius:10,background:GRD[bi%GRD.length],display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,border:'1px solid rgba(255,255,255,.07)'}}>
+                  <span style={{color:'rgba(255,255,255,.55)',width:20,height:20}}>{Ico.book}</span>
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:15,fontWeight:800,letterSpacing:'-.03em',marginBottom:2,lineHeight:1.3}}>{book.title}</div>
+                  {book.author&&<div style={{fontSize:12,color:'var(--t2)'}}>by {book.author}</div>}
+                  {book.genre&&<span className="chip cg" style={{marginTop:5,display:'inline-flex',fontSize:10,padding:'3px 9px'}}>{book.genre}</span>}
+                </div>
+                <div style={{textAlign:'right',flexShrink:0}}>
+                  <div style={{fontSize:22,fontWeight:800,fontFamily:'var(--mono)',letterSpacing:'-.05em',color:s.pct>=100?'var(--emerald)':'var(--violet2)'}}>{s.pct}%</div>
+                  {s.rs>0&&<span className="chip ca" style={{marginTop:4,display:'inline-flex',fontSize:10,padding:'2px 8px'}}>{s.rs}d</span>}
+                </div>
+              </div>
+              <div className="pbar" style={{height:5,marginBottom:13}}>
+                <div className="pf" style={{width:s.pct+'%',background:s.pct>=100?'var(--emerald)':'linear-gradient(90deg,var(--violet),var(--violet2))'}}/>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginBottom:13}}>
+                {[[s.read+'/'+s.total,'Read'],[s.rem>0?s.rem:'Done','Left'],[s.avg+'/d','Avg'],[s.needed?s.needed+'/d':s.pct>=100?'✓':s.estDate||'—',s.needed?'Needed':'Est. End']].map(([v,l],i)=>(
+                  <div key={i} className="tstat" style={{padding:'8px 4px'}}>
+                    <div className="tstat-v" style={{fontSize:11,color:'var(--t1)'}}>{v}</div>
+                    <div className="tstat-l" style={{fontSize:8.5}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              {s.todayLog&&<div style={{fontSize:12,color:'var(--emerald)',marginBottom:10,fontWeight:600}}>Today: {s.todayLog.pages} pages</div>}
+              {s.pct>=100&&<div style={{fontSize:13,color:'var(--emerald)',fontWeight:700,marginBottom:10}}>Completed</div>}
+              <div style={{display:'flex',gap:8}}>
+                {s.pct<100&&<button className="btn btn-v btn-sm" style={{flex:1}} onClick={()=>setLogT(book)}>Log Pages</button>}
+                <button className="btn btn-danger btn-xs" onClick={()=>sv(books.filter(b=>b.id!==book.id),rlogs.filter(l=>l.bid!==book.id))}><span style={{width:13,height:13,display:'flex'}}>{Ico.trash}</span></button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <FAB onClick={()=>setAdd(true)}/>
+      <Sheet open={addOpen} onClose={()=>setAdd(false)} title="Add Book"
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>setAdd(false)}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={addBook}>Add Book</button></>}>
+        <div className="fg"><label className="lbl">Title *</label><input className="inp" placeholder="Book title" value={form.title} onChange={e=>setForm({...form,title:e.target.value})}/></div>
+        <div className="r2">
+          <div className="fg"><label className="lbl">Author</label><input className="inp" placeholder="Author" value={form.author} onChange={e=>setForm({...form,author:e.target.value})}/></div>
+          <div className="fg"><label className="lbl">Genre</label><input className="inp" placeholder="Fiction…" value={form.genre} onChange={e=>setForm({...form,genre:e.target.value})}/></div>
+        </div>
+        <div className="fg"><label className="lbl">Total Pages *</label><input type="number" className="inp" placeholder="300" value={form.total} onChange={e=>setForm({...form,total:e.target.value})}/></div>
+        <div className="r2">
+          <div className="fg"><label className="lbl">Start</label><input type="date" className="inp" value={form.start} onChange={e=>setForm({...form,start:e.target.value})}/></div>
+          <div className="fg"><label className="lbl">Target</label><input type="date" className="inp" value={form.end} onChange={e=>setForm({...form,end:e.target.value})}/></div>
+        </div>
+      </Sheet>
+      <Sheet open={!!logT} onClose={()=>setLogT(null)} title={logT?.title||''}
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>setLogT(null)}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={logPages}>Log Pages</button></>}>
+        <div className="fg"><label className="lbl">Pages read today</label><input type="number" className="inp" placeholder="e.g. 30" value={pages} onChange={e=>setPg(e.target.value)}/></div>
+        <div className="fg"><label className="lbl">Notes / Highlights</label><textarea className="ta" placeholder="Key quotes, insights…" value={note} onChange={e=>setNote(e.target.value)}/></div>
+      </Sheet>
+    </div>
+  );
+}
+
+/* ── JOURNAL ─────────────────────────────── */
+function Journal({ uid }){
+  const [entries,setE]=useState(()=>DB.get('j_'+uid,[]));
+  const [tab,setTab]=useState('today');
+  const [addOpen,setAdd]=useState(false);
+  const [editEnt,setEdit]=useState(null);
+  const [search,setSrch]=useState('');
+  const [aTag,setATag]=useState('');
+  const [toast,setToast]=useState('');
+  const [form,setForm]=useState({topic:'',notes:'',tags:'',date:T()});
+  const sv=e=>{ setE(e); DB.set('j_'+uid,e) };
+
+  const openAdd=(e=null)=>{
+    setEdit(e);
+    setForm(e?{topic:e.topic,notes:e.notes||'',tags:(e.tags||[]).join(', '),date:e.date}:{topic:'',notes:'',tags:'',date:T()});
+    setAdd(true);
+  };
+
+  const saveE=()=>{
+    if(!form.topic.trim()) return;
+    const entry={id:editEnt?.id||gid(),...form,tags:form.tags.split(',').map(t=>t.trim()).filter(Boolean)};
+    sv(editEnt?entries.map(e=>e.id===editEnt.id?entry:e):[...entries,entry]);
+    setAdd(false); setEdit(null); setToast('Saved');
+  };
+
+  const now=new Date();
+  const weekE=entries.filter(e=>(now-new Date(e.date+'T12:00'))/86400000<=7);
+  const monthE=entries.filter(e=>{ const d=new Date(e.date+'T12:00'); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear() });
+  const allTags=[...new Set(entries.flatMap(e=>e.tags||[]))];
+
+  const mSum=useMemo(()=>{
+    const bt={};
+    monthE.forEach(e=>(e.tags||[]).forEach(t=>{ bt[t]=(bt[t]||0)+1 }));
+    return {count:monthE.length,top:Object.entries(bt).sort((a,b)=>b[1]-a[1]).slice(0,6)};
+  },[monthE]);
+
+  const shown=(tab==='today'?entries.filter(e=>e.date===T()):tab==='week'?weekE:tab==='month'?monthE:entries)
+    .filter(e=>{ if(aTag&&!(e.tags||[]).includes(aTag)) return false; if(!search) return true; return (e.topic+' '+(e.notes||'')+' '+(e.tags||[]).join(' ')).toLowerCase().includes(search.toLowerCase()) })
+    .slice().reverse();
+
+  return (
+    <div className="pg">
+      {toast&&<Toast msg={toast} onClose={()=>setToast('')}/>}
+      <div className="ph"><div><div className="ph-title">Journal</div><div className="ph-sub">Learning log & recall</div></div></div>
+      <div className="stat-grid">
+        <div className="scard"><div className="sval" style={{color:'var(--violet2)'}}>{entries.length}</div><div className="slbl">Entries</div></div>
+        <div className="scard"><div className="sval" style={{color:'var(--sky)'}}>{allTags.length}</div><div className="slbl">Topics</div></div>
+      </div>
+      <div className="tabs">
+        {[['today','Today'],['week','Week'],['month','Month'],['all','All']].map(([v,l])=>(
+          <button key={v} className={`tbtn ${tab===v?'on':''}`} onClick={()=>setTab(v)}>{l}</button>
+        ))}
+      </div>
+      {tab==='month'&&mSum.count>0&&(
+        <div className="sec" style={{paddingBottom:8}}>
+          <div className="card-glow" style={{padding:16}}>
+            <div style={{fontSize:11,fontWeight:700,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:8}}>Month Summary</div>
+            <div style={{fontSize:20,fontWeight:800,letterSpacing:'-.04em',marginBottom:8,fontFamily:'var(--mono)'}}>{mSum.count} <span style={{fontSize:13,color:'var(--t2)',fontFamily:'inherit',letterSpacing:'normal',fontWeight:600}}>entries</span></div>
+            {mSum.top.length>0&&<div style={{display:'flex',flexWrap:'wrap',gap:5}}>{mSum.top.map(([t,n])=><span key={t} className="chip cv" style={{cursor:'pointer',fontSize:10.5}} onClick={()=>setATag(t)}>{t} ({n})</span>)}</div>}
+          </div>
+        </div>
+      )}
+      <div className="srch-w">
+        <div className="srch-ico">{Ico.search}</div>
+        <input className="srch-inp" placeholder="Search entries, topics, tags…" value={search} onChange={e=>setSrch(e.target.value)}/>
+      </div>
+      {allTags.length>0&&<div style={{padding:'0 20px 13px',display:'flex',gap:5,flexWrap:'wrap'}}>
+        {allTags.slice(0,8).map(t=><span key={t} className={`chip ${aTag===t?'cv':'cg'}`} style={{cursor:'pointer'}} onClick={()=>setATag(aTag===t?'':t)}>{t}</span>)}
+      </div>}
+      <div className="sec">
+        {!shown.length&&<div className="empty"><div>{Ico.pen}</div><div className="empty-t">No entries found</div><div className="empty-s">Tap + to log what you learned</div></div>}
+        {shown.map(e=>(
+          <div key={e.id} className="jcard">
+            <div className="jcard-top">
+              <div className="jcard-title" onClick={()=>openAdd(e)}>{e.topic}</div>
+              <div style={{display:'flex',gap:7,alignItems:'center',flexShrink:0}}>
+                <div className="jcard-date">{fmt(e.date)}</div>
+                <button style={{width:27,height:27,borderRadius:8,background:'var(--roseDim)',border:'1px solid rgba(255,77,106,.2)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',color:'var(--rose)'}} onClick={ev=>{ev.stopPropagation();sv(entries.filter(en=>en.id!==e.id))}}>
+                  <span style={{width:12,height:12}}>{Ico.trash}</span>
+                </button>
+              </div>
+            </div>
+            {e.notes&&<div className="jcard-notes">{e.notes}</div>}
+            {e.tags?.length>0&&<div style={{display:'flex',gap:5,flexWrap:'wrap'}}>{e.tags.map(t=><span key={t} className="chip cv" style={{fontSize:10.5,cursor:'pointer',padding:'3px 9px'}} onClick={()=>setATag(t)}>{t}</span>)}</div>}
+          </div>
+        ))}
+      </div>
+      <FAB onClick={()=>openAdd()}/>
+      <Sheet open={addOpen} onClose={()=>{setAdd(false);setEdit(null)}} title={editEnt?'Edit Entry':'Log Learning'}
+        footer={<><button className="btn btn-ghost" style={{flex:1}} onClick={()=>{setAdd(false);setEdit(null)}}>Cancel</button><button className="btn btn-v" style={{flex:2}} onClick={saveE}>{editEnt?'Save':'Add Entry'}</button></>}>
+        <div className="fg"><label className="lbl">What did you learn? *</label><input className="inp" placeholder="Topic or skill" value={form.topic} onChange={e=>setForm({...form,topic:e.target.value})}/></div>
+        <div className="fg"><label className="lbl">Notes & Key Takeaways</label><textarea className="ta" style={{minHeight:110}} placeholder="Insights, examples, what surprised you…" value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></div>
+        <div className="fg"><label className="lbl">Tags (comma separated)</label><input className="inp" placeholder="React, SAP, Communication" value={form.tags} onChange={e=>setForm({...form,tags:e.target.value})}/></div>
+        <div className="fg"><label className="lbl">Date</label><input type="date" className="inp" value={form.date} onChange={e=>setForm({...form,date:e.target.value})}/></div>
+      </Sheet>
+    </div>
+  );
+}
+
+/* ── DASHBOARD ───────────────────────────── */
+function Dashboard({ uid, user, onNav }){
+  const habits=DB.get('h_'+uid,[]);
+  const hlogs=DB.get('hl_'+uid,[]);
+  const skills=DB.get('s_'+uid,[]);
+  const books=DB.get('b_'+uid,[]);
+  const rlogs=DB.get('rl_'+uid,[]);
+  const journals=DB.get('j_'+uid,[]);
+
+  const calcStreak=(hid)=>{
+    const h=habits.find(x=>x.id===hid)||{};
+    const as=d=>(h.skipWE&&isWE(d))||(h.freq==='weekdays'&&isWE(d));
+    let s=0,d=T();
+    for(let i=0;i<730;i++){
+      const l=hlogs.find(l=>l.hid===hid&&l.date===d);
+      if(l?.status==='done'){s++;d=shift(d,-1)}
+      else if(l?.status==='skipped'||as(d)){d=shift(d,-1)}
+      else break;
+    }
+    return s;
+  };
+
+  const rate=(days)=>{
+    if(!habits.length) return 0;
+    let dn=0,pos=0;
+    for(let i=0;i<days;i++){ const d=shift(T(),-i); dn+=hlogs.filter(l=>l.date===d&&l.status==='done').length; pos+=habits.length }
+    return pos?Math.round(dn/pos*100):0;
+  };
+
+  const monthRate=()=>{
+    const n=new Date(),y=n.getFullYear(),m=n.getMonth(),pd=n.getDate();
+    if(!habits.length) return 0;
+    let dn=0,pos=0;
+    for(let i=1;i<=pd;i++){ const d=`${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`; dn+=hlogs.filter(l=>l.date===d&&l.status==='done').length; pos+=habits.length }
+    return pos?Math.round(dn/pos*100):0;
+  };
+
+  const todayDone=hlogs.filter(l=>l.date===T()&&l.status==='done').length;
+  const todayPct=habits.length?Math.round(todayDone/habits.length*100):0;
+  const totalStreaks=habits.reduce((s,h)=>s+calcStreak(h.id),0);
+  const totalPages=rlogs.reduce((s,l)=>s+l.pages,0);
+  const activeBooks=books.filter(b=>rlogs.filter(l=>l.bid===b.id).reduce((s,l)=>s+l.pages,0)<Number(b.total));
+  const barD=Array.from({length:28},(_,i)=>{ const d=shift(T(),i-27); const dn=hlogs.filter(l=>l.date===d&&l.status==='done').length; return {d,p:habits.length?dn/habits.length:0} });
+  const greet=()=>{ const h=new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':'Good evening' };
+  const VCOLS=['var(--violet2)','var(--emerald)','var(--amber)','var(--rose)','var(--sky)'];
+
+  return (
+    <div className="pg">
+      {/* Greeting banner */}
+      <div style={{padding:'18px 20px 0'}}>
+        <div className="gbanner">
+          <div className="gorb" style={{width:180,height:180,background:'radial-gradient(circle,rgba(108,71,255,.35),transparent)',top:-60,right:-50}}/>
+          <div className="gorb" style={{width:120,height:120,background:'radial-gradient(circle,rgba(0,200,150,.2),transparent)',bottom:-30,left:'35%'}}/>
+          <div className="g-date">{new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>
+          <div className="g-name">{greet()}, {user.name.split(' ')[0]}</div>
+          <div className="g-stats">
+            {[[todayPct+'%','Today'],[rate(7)+'%','7-Day'],[monthRate()+'%','Month'],[totalStreaks,'Streaks']].map(([v,l])=>(
+              <div key={l} className="gst"><div className="gst-v">{v}</div><div className="gst-l">{l}</div></div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick nav tiles */}
+      <div style={{padding:'16px 20px 20px',display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8}}>
+        {[['Habits','h',Ico.run,'var(--violet)'],['Skills','s',Ico.brain,'var(--emerald)'],['Books','b',Ico.book,'var(--amber)'],['Journal','j',Ico.pen,'var(--rose)']].map(([l,p,ico,c])=>(
+          <div key={p} onClick={()=>onNav(p)} style={{background:'var(--bg2)',border:'1px solid var(--line)',borderRadius:'var(--rm)',padding:'14px 6px',textAlign:'center',cursor:'pointer',transition:'all .2s'}}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=c}} onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--line)'}}>
+            <div style={{display:'flex',justifyContent:'center',marginBottom:5,color:c}}><span style={{width:19,height:19}}>{ico}</span></div>
+            <div style={{fontSize:10,fontWeight:700,color:'var(--t2)',textTransform:'uppercase',letterSpacing:'.04em'}}>{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Today habit circles */}
+      {habits.length>0&&(
+        <div className="sec">
+          <div className="sec-hd"><span className="sec-ttl">Today's Progress</span><span className="sec-act" onClick={()=>onNav('h')}>See all</span></div>
+          <div style={{display:'flex',gap:14,flexWrap:'wrap',paddingBottom:4}}>
+            {habits.slice(0,5).map((h,i)=>{
+              const done=hlogs.filter(l=>l.hid===h.id&&l.status==='done').length;
+              const total=Math.max(1,diff(h.created,T())+1);
+              const pct=Math.round(done/total*100);
+              const isDone=hlogs.find(l=>l.hid===h.id&&l.date===T())?.status==='done';
+              return (
+                <div key={h.id} style={{textAlign:'center',cursor:'pointer'}} onClick={()=>onNav('h')}>
+                  <CircProg pct={pct} size={60} stroke={5} color={isDone?'var(--emerald)':(h.color||VCOLS[i%VCOLS.length])}/>
+                  <div style={{fontSize:10,color:'var(--t2)',marginTop:5,maxWidth:60,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600}}>{h.name}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Per-habit completion bars */}
+      {habits.length>0&&(
+        <div className="sec">
+          <div className="sec-hd"><span className="sec-ttl">Completion Rates</span></div>
+          <div className="card" style={{padding:17}}>
+            {habits.map((h,i)=>{
+              const done=hlogs.filter(l=>l.hid===h.id&&l.status==='done').length;
+              const total=Math.max(1,diff(h.created,T())+1);
+              const pct=Math.round(done/total*100);
+              const c=h.color||VCOLS[i%VCOLS.length];
+              return (
+                <div key={h.id} style={{marginBottom:i<habits.length-1?13:0}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <div style={{width:26,height:26,borderRadius:8,background:c+'1A',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{color:c,width:13,height:13}}>{Ico[h.icon]||Ico.target}</span></div>
+                      <span style={{fontSize:13,fontWeight:700}}>{h.name}</span>
+                    </div>
+                    <div style={{display:'flex',gap:7,alignItems:'center'}}>
+                      <span className="chip ca" style={{fontSize:10,padding:'2px 8px'}}>{calcStreak(h.id)}d</span>
+                      <span style={{fontSize:12,fontWeight:800,fontFamily:'var(--mono)',color:c}}>{pct}%</span>
+                    </div>
+                  </div>
+                  <div className="pbar" style={{height:4}}><div className="pf" style={{width:pct+'%',background:c}}/></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 28-day chart */}
+      <div className="sec">
+        <div className="sec-hd"><span className="sec-ttl">28-Day Overview</span></div>
+        <div className="card" style={{padding:17}}>
+          <div style={{display:'flex',alignItems:'flex-end',gap:3,height:72}}>
+            {barD.map(({d,p},i)=>{
+              const isT=d===T();
+              return <div key={i} title={`${fmt(d)}: ${Math.round(p*100)}%`} style={{flex:1,borderRadius:'3px 3px 0 0',background:isT?'var(--violet)':`rgba(108,71,255,${.09+p*.82})`,height:Math.max(3,p*68)+'px',transition:'height .4s',cursor:'pointer',boxShadow:isT?'0 0 10px var(--violetGlow)':'none'}}/>;
+            })}
+          </div>
+          <div style={{display:'flex',justifyContent:'space-between',marginTop:7,fontSize:10,color:'var(--t3)',fontFamily:'var(--mono)'}}>
+            <span>{fmt(shift(T(),-27))}</span><span style={{color:'var(--violet2)',fontWeight:700}}>Today</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Skills + books progress */}
+      {(skills.length>0||activeBooks.length>0)&&(
+        <div className="sec">
+          <div className="sec-hd"><span className="sec-ttl">Skills & Reading</span></div>
+          <div className="card" style={{padding:17}}>
+            {skills.map(sk=>{
+              const td=Math.max(1,diff(sk.start,sk.end)), el=Math.max(0,diff(sk.start,T()));
+              const pct=Math.min(100,Math.round(el/td*100));
+              return (
+                <div key={sk.id} style={{marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+                    <div style={{display:'flex',alignItems:'center',gap:7}}><span style={{width:13,height:13,color:'var(--violet2)'}}>{Ico.brain}</span><span style={{fontSize:13,fontWeight:700}}>{sk.name}</span></div>
+                    <span style={{fontSize:11,fontWeight:800,fontFamily:'var(--mono)',color:'var(--violet2)'}}>{pct}%</span>
+                  </div>
+                  <div className="pbar" style={{height:4}}><div className="pf pf-v" style={{width:pct+'%'}}/></div>
+                </div>
+              );
+            })}
+            {activeBooks.map((book)=>{
+              const read=rlogs.filter(l=>l.bid===book.id).reduce((s,l)=>s+l.pages,0);
+              const pct=Math.min(100,Math.round(read/Number(book.total)*100));
+              return (
+                <div key={book.id} style={{marginBottom:12}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
+                    <div style={{display:'flex',alignItems:'center',gap:7}}><span style={{width:13,height:13,color:'var(--amber)'}}>{Ico.book}</span><span style={{fontSize:13,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:180}}>{book.title}</span></div>
+                    <span style={{fontSize:11,fontWeight:800,fontFamily:'var(--mono)',color:'var(--amber)'}}>{pct}%</span>
+                  </div>
+                  <div className="pbar" style={{height:4}}><div className="pf pf-a" style={{width:pct+'%'}}/></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Streak leaderboard */}
+      {habits.length>0&&(
+        <div className="sec">
+          <div className="sec-hd"><span className="sec-ttl">Streak Rankings</span></div>
+          {[...habits].sort((a,b)=>calcStreak(b.id)-calcStreak(a.id)).slice(0,5).map((h,i)=>{
+            const s=calcStreak(h.id), c=h.color||VCOLS[i%VCOLS.length];
+            return (
+              <div key={h.id} style={{display:'flex',alignItems:'center',gap:11,padding:'11px 15px',background:'var(--bg2)',borderRadius:'var(--rm)',marginBottom:8,border:'1px solid var(--line)'}}>
+                <div style={{width:24,textAlign:'center',fontSize:14,fontWeight:800,fontFamily:'var(--mono)',color:i===0?'var(--amber)':i===1?'var(--t2)':i===2?'var(--amber)':'var(--t3)',opacity:i===0?1:i===1?.7:i===2?.5:.35}}>{i+1}</div>
+                <div style={{width:34,height:34,borderRadius:11,background:c+'1A',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}><span style={{color:c,width:17,height:17}}>{Ico[h.icon]||Ico.target}</span></div>
+                <div style={{flex:1,fontSize:13,fontWeight:700}}>{h.name}</div>
+                <span className="chip ca" style={{fontFamily:'var(--mono)',fontSize:11}}>{s}d</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div style={{height:8}}/>
+    </div>
+  );
+}
+
+/* ── SETTINGS ────────────────────────────── */
+function Settings({ user, dark, setDark, onLogout }){
+  return (
+    <div className="pg">
+      <div className="ph"><div><div className="ph-title">Settings</div><div className="ph-sub">Preferences & account</div></div></div>
+      <div className="sec">
+        <div className="card" style={{padding:'0 17px'}}>
+          <div className="srow"><div><div className="srow-l">Account</div><div className="srow-sub">{user.name} · {user.email}</div></div></div>
+          <div className="srow">
+            <div><div className="srow-l">{dark?'Dark Mode':'Light Mode'}</div><div className="srow-sub">Switch appearance</div></div>
+            <Tog on={dark} set={setDark}/>
+          </div>
+          <div className="srow"><div><div className="srow-l">Version</div><div className="srow-sub">Zenit v4.0 · Data stored locally</div></div></div>
+        </div>
+        <div style={{marginTop:20}}>
+          <button className="btn btn-danger" style={{width:'100%',padding:'13px',fontSize:14,justifyContent:'center'}} onClick={onLogout}>Sign Out</button>
+        </div>
+        <div style={{marginTop:14,padding:'12px 14px',background:'var(--bg2)',borderRadius:'var(--rm)',fontSize:12,color:'var(--t3)',lineHeight:1.65,border:'1px solid var(--line)'}}>
+          Connect Supabase for cross-device sync using the included schema. All current data is safe in your browser's localStorage.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── ROOT ────────────────────────────────── */
+function App(){
+  const [user,setUser]=useState(()=>DB.get('sess',null));
+  const [page,setPage]=useState('home');
+  const [dark,setDark]=useState(()=>DB.get('theme','dark')==='dark');
+  useEffect(()=>{ document.body.className=dark?'':'light'; DB.set('theme',dark?'dark':'light') },[dark]);
+  if(!user) return <Auth onLogin={u=>setUser(u)}/>;
+  const uid=user.id;
+  const NAV=[{id:'home',ico:Ico.home,lbl:'Home'},{id:'h',ico:Ico.run,lbl:'Habits'},{id:'s',ico:Ico.brain,lbl:'Skills'},{id:'b',ico:Ico.book,lbl:'Books'},{id:'j',ico:Ico.pen,lbl:'Journal'},{id:'cfg',ico:Ico.settings,lbl:'More'}];
+  return (
+    <div className="shell">
+      <div className="scroll-area">
+        {page==='home'&&<Dashboard uid={uid} user={user} onNav={setPage}/>}
+        {page==='h'&&<Habits uid={uid}/>}
+        {page==='s'&&<Skills uid={uid}/>}
+        {page==='b'&&<Books uid={uid}/>}
+        {page==='j'&&<Journal uid={uid}/>}
+        {page==='cfg'&&<Settings user={user} dark={dark} setDark={setDark} onLogout={()=>{DB.set('sess',null);setUser(null)}}/>}
+      </div>
+      <div className="nav-float">
+        {NAV.map(n=>(
+          <button key={n.id} className={`nb ${page===n.id?'on':''}`} onClick={()=>setPage(n.id)}>
+            <span style={{width:19,height:19,display:'flex',alignItems:'center',justifyContent:'center'}}>{n.ico}</span>
+            <span className="nl">{n.lbl}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
